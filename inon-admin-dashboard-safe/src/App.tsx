@@ -331,12 +331,11 @@ export default function Admin() {
       <section className="admin-main">
         <header>
           <div>
-            <p>THURSDAY, 20 AUGUST</p>
+            <p>{new Intl.DateTimeFormat("en-IN", { weekday: "long", day: "numeric", month: "long" }).format(new Date()).toUpperCase()}</p>
             <h1>{active}</h1>
           </div>
           <div>
-            <button>⌕</button>
-            <button>♧</button>
+            <button className="header-refresh" onClick={() => refresh().catch((error) => setWorkspaceError(error instanceof Error ? error.message : "Unable to refresh workspace"))}>Refresh data</button>
             <a href={STOREFRONT_URL}>View store ↗</a>
           </div>
         </header>
@@ -641,12 +640,13 @@ export default function Admin() {
         ) : active === "Analytics" ? (
           <article className="orders-table operations-table"><div><span>EVENT ANALYTICS</span><button onClick={refreshOperations}>Refresh</button></div><div className="metric-grid operations-metrics"><article><span>TOTAL EVENTS</span><b>{analytics?.total_events ?? 0}</b><p>Tracked platform events</p></article>{Object.entries(analytics?.events_by_name ?? {}).map(([name, count]) => <article key={name}><span>{name.toUpperCase()}</span><b>{count}</b><p>Recorded events</p></article>)}</div></article>
         ) : (
-          <div className="admin-placeholder">
-            <b>{active}</b>
-            <h2>A complete workspace for {active.toLowerCase()}.</h2>
-            <p>Search, filters, bulk actions, export and detailed management panels are represented in this design system.</p>
-            <button className="primary">Create new →</button>
-          </div>
+            <div className="admin-placeholder settings-panel">
+              <b>{active}</b>
+              <h2>Platform settings</h2>
+              <p>Your store is connected to the production API and Supabase workspace.</p>
+              <div className="settings-grid"><div><span>API STATUS</span><strong>Connected</strong><small>{import.meta.env.VITE_API_BASE_URL ?? "Local API fallback"}</small></div><div><span>STORE STATUS</span><strong>Live</strong><small>COD checkout enabled</small></div><div><span>DATA</span><strong>Supabase</strong><small>Auth, database and storage</small></div></div>
+              <a className="primary" href={STOREFRONT_URL}>Open storefront →</a>
+            </div>
         )}
       </section>
     </main>
