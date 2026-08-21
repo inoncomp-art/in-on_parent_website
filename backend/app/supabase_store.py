@@ -149,6 +149,7 @@ class SupabaseStore:
             "POST",
             "admin/users",
             base_url=f"{self.url.rstrip('/')}/auth/v1",
+            bearer=self.service_role_key,
             payload={
                 "email": email,
                 "password": password,
@@ -161,6 +162,7 @@ class SupabaseStore:
             "GET",
             "admin/users",
             base_url=f"{self.url.rstrip('/')}/auth/v1",
+            bearer=self.service_role_key,
             params=[("page", "1"), ("per_page", "200")],
         )
         if isinstance(data, dict):
@@ -179,11 +181,12 @@ class SupabaseStore:
             "PUT",
             f"admin/users/{user_id}",
             base_url=f"{self.url.rstrip('/')}/auth/v1",
+            bearer=self.service_role_key,
             payload=payload,
         )
 
     def auth_admin_delete_user(self, user_id: str) -> None:
-        self._request("DELETE", f"admin/users/{user_id}", base_url=f"{self.url.rstrip('/')}/auth/v1")
+        self._request("DELETE", f"admin/users/{user_id}", base_url=f"{self.url.rstrip('/')}/auth/v1", bearer=self.service_role_key)
 
     def auth_password_login(self, email: str, password: str) -> dict[str, Any]:
         return self._request(
