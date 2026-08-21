@@ -4,6 +4,7 @@ import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { PremiumFooter, PremiumHeader } from "../../components/Shell";
 import { loadCatalog, type CatalogProduct } from "../../catalog";
+import { addWishlist, hasStoredSession, loadWishlist, removeWishlist } from "../../lib/api";
 import { addToBag, readWishlist, toggleWishlist } from "../../lib/shopState";
 
 const filters = ["All", "Face Wash", "Serum", "Moisturizer", "Sunscreen"];
@@ -17,6 +18,7 @@ export default function Shop() {
 
   useEffect(() => {
     setWishlist(readWishlist());
+    if (hasStoredSession()) loadWishlist().then((items) => setWishlist(items.map((item) => item.slug))).catch(() => undefined);
     const sync = () => setWishlist(readWishlist());
     window.addEventListener("inon-shop-state", sync);
     return () => window.removeEventListener("inon-shop-state", sync);
@@ -28,8 +30,15 @@ export default function Shop() {
     window.setTimeout(() => setToast(""), 1800);
   };
 
-  const saveProduct = (product: CatalogProduct) => {
-    setWishlist(toggleWishlist(product.slug));
+  const saveProduct = async (product: CatalogProduct) => {
+    const next = toggleWishlist(product.slug);
+    setWishlist(next);
+    if (hasStoredSession()) {
+      try {
+        const saved = next.includes(product.slug) ? await addWishlist(product.slug) : await removeWishlist(product.slug);
+        setWishlist(saved.map((item) => item.slug));
+      } catch { setToast("Sign in to sync your wishlist"); }
+    }
   };
 
   useEffect(() => {

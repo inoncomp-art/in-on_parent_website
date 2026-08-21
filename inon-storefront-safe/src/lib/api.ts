@@ -102,6 +102,9 @@ export async function loadAddresses(): Promise<ApiAddress[]> { return requestJSO
 export async function createAddress(payload: Omit<ApiAddress, "id" | "user_id" | "created_at" | "updated_at">): Promise<ApiAddress> { return postJSON("/api/account/addresses", payload); }
 export async function updateAddress(id: number, payload: Omit<ApiAddress, "id" | "user_id" | "created_at" | "updated_at">): Promise<ApiAddress> { return requestJSON(`/api/account/addresses/${id}`, { method: "PATCH", body: JSON.stringify(payload) }); }
 export async function deleteAddress(id: number): Promise<void> { return requestJSON(`/api/account/addresses/${id}`, { method: "DELETE" }); }
+export async function loadWishlist(): Promise<ApiProduct[]> { return requestJSON("/api/account/wishlist"); }
+export async function addWishlist(product_slug: string): Promise<ApiProduct[]> { return postJSON("/api/account/wishlist", { product_slug }); }
+export async function removeWishlist(product_slug: string): Promise<ApiProduct[]> { return requestJSON(`/api/account/wishlist/${encodeURIComponent(product_slug)}`, { method: "DELETE" }); }
 
 export function hasStoredSession(): boolean {
   return Boolean(readSession()?.token);
