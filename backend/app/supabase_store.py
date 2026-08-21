@@ -55,7 +55,10 @@ class SupabaseStore:
         if params:
             url = f"{url}?{urlencode(params, doseq=True)}"
         body = None if payload is None else _json(payload).encode("utf-8")
-        request = Request(url, data=body, headers=self._headers(prefer, bearer=bearer), method=method)
+        server_bearer = bearer
+        if server_bearer is None and (base_url is None or base_url == self._base_storage_url):
+            server_bearer = self.service_role_key
+        request = Request(url, data=body, headers=self._headers(prefer, bearer=server_bearer), method=method)
         try:
             with urlopen(request, timeout=45) as response:
                 raw = response.read().decode("utf-8")
