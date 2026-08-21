@@ -37,7 +37,12 @@ class Settings:
 
     @property
     def cors_origin_list(self) -> list[str]:
-        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+        configured = [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+        production_origins = [
+            "https://inon-storefront.pages.dev",
+            "https://inon-admin.pages.dev",
+        ]
+        return list(dict.fromkeys(configured + production_origins))
 
 
 settings = Settings()
