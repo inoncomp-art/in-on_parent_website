@@ -257,7 +257,7 @@ export default function Admin() {
 
   if (bootstrapping && !authenticated) {
     return (
-      <main className="admin-app">
+      <main className="admin-app admin-auth">
         <section className="admin-main" style={{ width: "100%" }}>
           <div className="admin-placeholder">
             <b>Loading</b>
@@ -271,7 +271,7 @@ export default function Admin() {
 
   if (!authenticated) {
     return (
-      <main className="admin-app">
+      <main className="admin-app admin-auth">
         <section className="admin-main" style={{ width: "100%", minHeight: "100vh" }}>
           <div className="admin-placeholder">
             <b>Admin access</b>
