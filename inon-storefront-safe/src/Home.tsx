@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { loadCatalog, type CatalogProduct } from "./catalog";
 import { createOrder, hasStoredSession, loadCustomerOrder, recordAnalyticsEvent, type ApiOrder } from "./lib/api";
 import { addToBag, readBag, removeBagItemAt } from "./lib/shopState";
 
 export default function Home() {
+  const location = useLocation();
   const [catalog, setCatalog] = useState<CatalogProduct[]>([]);
   const [cart, setCart] = useState<number[]>([]);
   const [panel, setPanel] = useState<"cart" | "track" | "checkout" | null>(null);
@@ -19,6 +20,9 @@ export default function Home() {
   const [trackedOrder, setTrackedOrder] = useState<ApiOrder | null>(null);
   const [trackError, setTrackError] = useState("");
   const [trackBusy, setTrackBusy] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
+  useEffect(() => { const sync = () => setSignedIn(hasStoredSession()); sync(); window.addEventListener("storage", sync); window.addEventListener("focus", sync); return () => { window.removeEventListener("storage", sync); window.removeEventListener("focus", sync); }; }, []);
+  useEffect(() => { if (new URLSearchParams(location.search).get("bag") === "1") setPanel("cart"); }, [location.search]);
   useEffect(() => {
     recordAnalyticsEvent("page_view").catch(() => undefined);
     let alive = true;
@@ -69,7 +73,6 @@ export default function Home() {
       const order = await createOrder({
         items: cartProducts.map((product) => ({ product_slug: product.slug, quantity: 1 })),
         shipping: { first_name: firstName, last_name: lastName, phone: checkout.phone, address: checkout.address, city: checkout.city, postal_code: checkout.postalCode },
-        payment_method: "cod",
       });
       setCart([]);
       setPanel(null);
@@ -106,7 +109,7 @@ export default function Home() {
   return (
     <main>
       <div className="announce">
-        FRESH SKIN, FRESH START <span>•</span> FOR DRY, OILY, COMBINATION &amp; SENSITIVE-FEELING SKIN <span>•</span> FREE SHIPPING ABOVE ₹499
+        FRESH SKIN, FRESH START <span>•</span> FOR DRY, OILY, COMBINATION &amp; SENSITIVE-FEELING SKIN <span>•</span> FREE SHIPPING ABOVE ₹599
       </div>
 
       <header>
@@ -121,9 +124,7 @@ export default function Home() {
           <a href="/contact">Contact</a>
         </nav>
         <div className="header-actions account-links">
-          <a className="dashboard-link" href="/shop">
-            Start your ritual
-          </a>
+          {signedIn ? <a className="dashboard-link" href="/account">Dashboard</a> : <><a className="login-link" href="/login?next=/account">Login</a><a className="signup-link" href="/signup?next=/account">Sign up</a></>}
           <button className="bag" onClick={() => setPanel("cart")}>
             Bag <b>{cart.length}</b>
           </button>
@@ -386,7 +387,7 @@ export default function Home() {
             <br />
             Effective everyday care.
           </p>
-          <div className="social">Instagram ↗ &nbsp; Pinterest ↗</div>
+          <div className="social"><a href="https://www.instagram.com/inandon.care/?hl=en-in" target="_blank" rel="noreferrer">Instagram ↗</a></div>
         </div>
         <div>
           <h4>SHOP</h4>
@@ -451,7 +452,7 @@ export default function Home() {
                       <span>Subtotal</span>
                       <b>₹{subtotal}</b>
                     </div>
-                    <p className="delivery">✓ You qualify for free shipping</p>
+                    <p className="delivery">{subtotal >= 599 ? "✓ You qualify for free shipping" : `Add ₹${599 - subtotal} more for complimentary shipping`}</p>
                     <button className="primary full" onClick={() => setPanel("checkout")}>
                       Secure checkout →
                     </button>
@@ -501,11 +502,7 @@ export default function Home() {
               <>
                 <p className="eyebrow red">SECURE CHECKOUT</p>
                 <h2>Almost glowing.</h2>
-                <div className="checkout-steps">
-                  <b>1 Address</b>
-                  <span>2 Payment</span>
-                  <span>3 Done</span>
-                </div>
+                <div className="checkout-steps"><b>1 Delivery details</b><span>2 Confirmation</span></div>
                 <label className="field">
                     Full name
                   <input value={checkout.name} onChange={(event) => setCheckout({ ...checkout, name: event.target.value })} placeholder="Name for delivery" />
@@ -528,18 +525,13 @@ export default function Home() {
                     <input value={checkout.city} onChange={(event) => setCheckout({ ...checkout, city: event.target.value })} placeholder="New Delhi" />
                   </label>
                 </div>
-                <div className="payment">
-                  <b>PAYMENT METHOD</b>
-                  <p>◉ Cash on delivery</p>
-                  <small>Pay in cash when your In&amp;On ritual arrives.</small>
-                </div>
                 <div className="total">
                   <span>Payable total</span>
                   <b>₹{subtotal || 0}</b>
                 </div>
                 {checkoutError ? <p className="form-error">{checkoutError}</p> : null}
-                <button className="primary full" onClick={placeOrder} disabled={checkoutBusy}>{checkoutBusy ? "Placing order..." : "Place cash-on-delivery order →"}</button>
-                <small className="secure">COD order · No online payment required</small>
+                <button className="primary full" onClick={placeOrder} disabled={checkoutBusy}>{checkoutBusy ? "Confirming order..." : "Confirm order →"}</button>
+                <small className="secure">Secure order confirmation · Support: support@inoncare.com</small>
               </>
             ) : null}
           </aside>

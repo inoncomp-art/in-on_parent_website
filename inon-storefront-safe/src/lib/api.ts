@@ -158,7 +158,7 @@ export async function createOrder(payload: {
     city: string;
     postal_code: string;
   };
-  payment_method: "cod";
+  payment_method?: "cod";
 }): Promise<ApiOrder> {
   return postJSON("/api/orders", payload);
 }

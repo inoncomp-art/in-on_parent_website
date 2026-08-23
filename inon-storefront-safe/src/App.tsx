@@ -35,7 +35,7 @@ function ProductRoute() {
     };
   }, [slug]);
 
-  return product ? <ProductStory product={product} /> : <Home />;
+  return product ? <ProductStory product={product} /> : <main><section className="empty-state account-guard"><b>404</b><h3>That formula could not be found.</h3><p>Explore the full shelf to find your next ritual.</p><a className="primary" href="/shop">Shop all products →</a></section></main>;
 }
 
 function ProtectedAccount() {
