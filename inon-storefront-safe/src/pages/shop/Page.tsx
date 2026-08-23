@@ -8,6 +8,13 @@ import { addWishlist, hasStoredSession, loadWishlist, removeWishlist } from "../
 import { addToBag, readWishlist, toggleWishlist } from "../../lib/shopState";
 
 const filters = ["All", "Face Wash", "Serum", "Moisturizer", "Sunscreen"];
+const shopHeroImages = [
+  ["/about-hero/cucumber-facewash.png", "Cucumber Face Wash"],
+  ["/about-hero/mango-sunscreen.png", "Mango Sunscreen"],
+  ["/about-hero/orange-moisturizer.png", "Orange Moisturizer"],
+  ["/about-hero/strawberry-face-serum.png", "Strawberry Face Serum"],
+  ["/about-hero/watermelon-face-wash.png", "Watermelon Face Wash"],
+] as const;
 
 export default function Shop() {
   const [catalog, setCatalog] = useState<CatalogProduct[]>([]);
@@ -15,6 +22,12 @@ export default function Shop() {
   const [filter, setFilter] = useState("All");
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [toast, setToast] = useState("");
+  const [heroIndex, setHeroIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setHeroIndex((index) => (index + 1) % shopHeroImages.length), 2000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     setWishlist(readWishlist());
@@ -66,19 +79,17 @@ export default function Shop() {
   return (
     <main>
       <PremiumHeader />
-      <section className="shop-hero">
-        <p className="eyebrow">THE IN&ON SHELF</p>
-        <h1>
-          Find your
-          <br />
-          <em>skin rhythm.</em>
-        </h1>
-        <p>Five focused formulas, one uncomplicated routine.</p>
-        <div className="shop-bubbles">
-          <span>Fruit-powered</span>
-          <span>Active-led</span>
-          <span>Everyday-ready</span>
+      <section className="shop-hero shop-carousel" aria-label="In&On skincare collection">
+        <div className="shop-hero-slides" aria-hidden="true">
+          {shopHeroImages.map(([src], index) => <img className={index === heroIndex ? "shop-hero-slide active" : "shop-hero-slide"} src={src} alt="" key={src} />)}
         </div>
+        <div className="shop-hero-copy">
+          <p className="eyebrow">THE IN&ON SHELF</p>
+          <h1>Find your<br /><em>skin rhythm.</em></h1>
+          <p>Five focused formulas, one uncomplicated routine.</p>
+          <div className="shop-bubbles"><span>Fruit-powered</span><span>Active-led</span><span>Everyday-ready</span></div>
+        </div>
+        <div className="shop-hero-dots" aria-label="Hero image selection">{shopHeroImages.map(([_, alt], index) => <button aria-label={`Show ${alt}`} aria-current={index === heroIndex} className={index === heroIndex ? "active" : ""} onClick={() => setHeroIndex(index)} key={alt} />)}</div>
       </section>
       <section className="catalog-page">
         <div className="catalog-tools">
