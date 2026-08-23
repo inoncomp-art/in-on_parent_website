@@ -83,13 +83,6 @@ export default function Shop() {
         <div className="shop-hero-slides" aria-hidden="true">
           {shopHeroImages.map(([src], index) => <img className={index === heroIndex ? "shop-hero-slide active" : "shop-hero-slide"} src={src} alt="" key={src} />)}
         </div>
-        <div className="shop-hero-copy">
-          <p className="eyebrow">THE IN&ON SHELF</p>
-          <h1>Find your<br /><em>skin rhythm.</em></h1>
-          <p>Five focused formulas, one uncomplicated routine.</p>
-          <div className="shop-bubbles"><span>Fruit-powered</span><span>Active-led</span><span>Everyday-ready</span></div>
-        </div>
-        <div className="shop-hero-dots" aria-label="Hero image selection">{shopHeroImages.map(([_, alt], index) => <button aria-label={`Show ${alt}`} aria-current={index === heroIndex} className={index === heroIndex ? "active" : ""} onClick={() => setHeroIndex(index)} key={alt} />)}</div>
       </section>
       <section className="catalog-page">
         <div className="catalog-tools">

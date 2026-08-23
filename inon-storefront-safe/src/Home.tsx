@@ -132,7 +132,7 @@ export default function Home() {
       </header>
 
       <section className="hero supplied-hero" id="top">
-        <img className="supplied-hero-image" src="/hero2.png" alt="In&On fruit-powered skincare collection" />
+        <img className="supplied-hero-image" src="/home-hero.png" alt="In&On fruit-powered skincare collection" />
         <div className="supplied-hero-copy">
           <h1>Skin that feels<br /><em>good,</em> in &amp; out.</h1>
           <p>Joyful, effective skincare made with<br />familiar fruits and proven actives,<br />designed for <strong>real Indian skin.</strong></p>
