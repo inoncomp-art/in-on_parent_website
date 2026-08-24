@@ -5,6 +5,7 @@ import { Link, useLocation } from "react-router-dom";
 import { loadCatalog, type CatalogProduct } from "./catalog";
 import { createOrder, hasStoredSession, loadCustomerOrder, recordAnalyticsEvent, type ApiOrder } from "./lib/api";
 import { addToBag, readBag, removeBagItemAt } from "./lib/shopState";
+import HomepageEditorial, { HomepageCommunity } from "./components/HomepageEditorial";
 
 export default function Home() {
   const location = useLocation();
@@ -145,15 +146,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="marquee">
-        <span>DERMATOLOGICALLY TESTED</span>
-        <i>✦</i>
-        <span>THOUGHTFUL ACTIVES</span>
-        <i>✦</i>
-        <span>MADE FOR DAILY USE</span>
-        <i>✦</i>
-        <span>NO FUSS, JUST GLOW</span>
-      </section>
+      <HomepageEditorial />
 
       <section className="shop" id="shop">
         <div className="section-head">
@@ -225,6 +218,8 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      <HomepageCommunity />
 
       <section className="ritual" id="ritual">
         <div className="ritual-art">
