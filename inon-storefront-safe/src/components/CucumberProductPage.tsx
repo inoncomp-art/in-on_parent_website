@@ -35,6 +35,8 @@ export default function CucumberProductPage({ product }: { product: CatalogProdu
     "/product-details/cucumber-face-wash/6.png",
   ];
   const [selectedImage, setSelectedImage] = useState(galleryImages[0]);
+  const [pincode, setPincode] = useState("");
+  const [deliveryMessage, setDeliveryMessage] = useState("");
   const addProduct = () => { addToBag(product.slug); setAdded(true); };
 
   return (
@@ -57,7 +59,7 @@ export default function CucumberProductPage({ product }: { product: CatalogProdu
           <div className="cucumber-price"><b>₹{product.price}</b><del>₹{product.mrp}</del><span>Save ₹{product.mrp - product.price}</span></div>
           <p className="cucumber-tax">MRP incl. of all taxes</p>
           <div className="cucumber-detail-card"><strong>Helps</strong><div><span>✦ Fresh cleanse</span><span>✦ Excess oil care</span><span>✦ Refreshed glow</span><span>✦ Comfortable hydration</span></div><strong>Targets</strong><div className="targets"><span>Oiliness</span><span>Dullness</span><span>Daily grime</span></div></div>
-          <div className="cucumber-delivery"><b>Check for delivery</b><div><input placeholder="Enter your pincode" /><button>Check</button></div></div>
+          <div className="cucumber-delivery"><b>Check for delivery</b><div><input value={pincode} onChange={(event) => setPincode(event.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" placeholder="Enter your pincode" /><button type="button" onClick={() => setDeliveryMessage(pincode.length === 6 ? "Delivery available to your pincode" : "Enter a valid 6-digit pincode")}>Check</button></div>{deliveryMessage ? <small>{deliveryMessage}</small> : null}</div>
           <div className="cucumber-offer"><b>Available offer</b><strong>Flat 15% OFF</strong><small>On your first ritual · Use code: GLOW15</small></div>
           <button className="cucumber-add primary" onClick={addProduct}>{added ? "ADDED TO BAG ✓" : "ADD TO BAG"}</button>
         </div>
