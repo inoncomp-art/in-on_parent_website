@@ -132,7 +132,9 @@ export default function Home() {
       </header>
 
       <section className="hero supplied-hero" id="top">
-        <img className="supplied-hero-image" src="/home-hero.png" alt="In&On fruit-powered skincare collection" />
+        <video className="supplied-hero-video" autoPlay muted loop playsInline preload="metadata" aria-label="In&On skincare collection film">
+          <source src="/home-hero.mp4" type="video/mp4" />
+        </video>
         <div className="supplied-hero-copy">
           <h1>Skin that feels<br /><em>good,</em> in &amp; out.</h1>
           <p>Joyful, effective skincare made with<br />familiar fruits and proven actives,<br />designed for <strong>real Indian skin.</strong></p>
@@ -146,10 +148,6 @@ export default function Home() {
             <span><b>♧</b><strong>100%</strong><small>Joyful care</small></span>
           </div>
         </div>
-        <a className="supplied-hotspot product-hotspot serum" href="/products/strawberry-serum" aria-label="View Strawberry Face Serum" />
-        <a className="supplied-hotspot product-hotspot sunscreen" href="/products/mango-sunscreen" aria-label="View Mango Sunscreen" />
-        <a className="supplied-hotspot product-hotspot cucumber" href="/products/cucumber-face-wash" aria-label="View Cucumber Face Wash" />
-        <a className="supplied-hotspot product-hotspot watermelon" href="/products/watermelon-face-wash" aria-label="View Watermelon Face Wash" />
       </section>
 
       <section className="marquee">
