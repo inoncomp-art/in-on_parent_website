@@ -7,6 +7,8 @@ import { addToBag } from "../lib/shopState";
 
 export default function ProductStory({ product }: { product: CatalogProduct }) {
   const [added, setAdded] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(1);
+  const galleryImages = Array.from({ length: 7 }, (_, index) => `/product-details/${product.slug}/${index + 1}.png`);
   const addProduct = () => { addToBag(product.slug); setAdded(true); };
   const [related, setRelated] = useState<CatalogProduct[]>([]);
   useEffect(() => { loadCatalog().then((items) => setRelated(items.filter((item) => item.slug !== product.slug).slice(0, 4))); }, [product.slug]);
@@ -22,7 +24,10 @@ export default function ProductStory({ product }: { product: CatalogProduct }) {
           <div className="orb one"></div>
           <div className="orb two"></div>
           <p>IN&ON / {product.kicker}</p>
-          <img src={product.image} alt={product.name} />
+          <img src={galleryImages[selectedImage]} alt={`${product.name} product detail ${selectedImage + 1}`} onError={(event) => { event.currentTarget.src = product.image; }} />
+          <div className="story-thumbs" aria-label={`${product.name} image gallery`}>
+            {galleryImages.map((image, index) => <button className={selectedImage === index ? "active" : ""} onClick={() => setSelectedImage(index)} aria-label={`View image ${index + 1}`} aria-current={selectedImage === index} key={image}><img src={image} alt="" /></button>)}
+          </div>
           <span className="vertical-word">{product.name.split(" ")[0]}</span>
         </div>
         <div className="story-flow">
