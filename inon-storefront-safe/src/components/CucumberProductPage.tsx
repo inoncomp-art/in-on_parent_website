@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { type CSSProperties, useState } from "react";
 import { PremiumFooter, PremiumHeader } from "./Shell";
+import RelatedProducts from "./RelatedProducts";
 import { addToBag } from "../lib/shopState";
 import type { CatalogProduct } from "../catalog";
 
@@ -39,7 +40,7 @@ export default function CucumberProductPage({ product }: { product: CatalogProdu
   const addProduct = () => { addToBag(product.slug); setAdded(true); };
 
   return (
-    <main className="cucumber-page">
+    <main className="cucumber-page" style={{ "--product-tone": "#e9f7c9", "--product-accent": "#3c8b28" } as CSSProperties}>
       <PremiumHeader />
       <section className="cucumber-product-top">
         <div className="cucumber-gallery">
@@ -89,7 +90,7 @@ export default function CucumberProductPage({ product }: { product: CatalogProdu
         <img src="/product-details/cucumber-face-wash/7.png" alt="Visible results after using Cucumber Face Wash" />
       </section>
 
-      <section className="cucumber-bottom-cta"><p className="eyebrow">READY FOR A FRESH START?</p><h2>Cleanse gently.<br /><em>Glow naturally.</em></h2><button className="primary" onClick={addProduct}>{added ? "In your bag ✓" : `Add Cucumber Face Wash · ₹${product.price}`}</button></section>
+      <section className="cucumber-bottom-cta"><p className="eyebrow">READY FOR A FRESH START?</p><h2>Cleanse gently.<br /><em>Glow naturally.</em></h2><button className="primary" onClick={addProduct}>{added ? "In your bag ✓" : `Add Cucumber Face Wash · ₹${product.price}`}</button></section><RelatedProducts currentSlug={product.slug} />
       <PremiumFooter />
     </main>
   );

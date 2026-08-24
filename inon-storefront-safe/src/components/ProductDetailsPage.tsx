@@ -2,6 +2,7 @@ import { type CSSProperties, useState } from "react";
 import { PremiumFooter, PremiumHeader } from "./Shell";
 import { addToBag } from "../lib/shopState";
 import type { CatalogProduct } from "../catalog";
+import RelatedProducts from "./RelatedProducts";
 
 type ProductDetails = { background: string; subtitle: string; heroClaim: string; heroDescription: string; benefits: string[]; daily: string[]; ingredients: [string, string][]; steps: string[]; tip: string };
 
@@ -44,7 +45,7 @@ export default function ProductDetailsPage({ product }: { product: CatalogProduc
   const [pincode, setPincode] = useState("");
   const [deliveryMessage, setDeliveryMessage] = useState("");
   const addProduct = () => { addToBag(product.slug); setAdded(true); };
-  return <main className="cucumber-page" style={{ "--product-background": `url(${config.background})` } as CSSProperties}>
+  return <main className="cucumber-page" style={{ "--product-background": `url(${config.background})`, "--product-tone": product.tone, "--product-accent": product.accent } as CSSProperties}>
     <PremiumHeader />
     <section className="cucumber-product-top">
       <div className="cucumber-gallery"><div className="cucumber-gallery-thumbs" aria-label={`${product.name} product images`}>{galleryImages.map((image, index) => <button className={selectedImage === image ? "active" : ""} onClick={() => setSelectedImage(image)} aria-label={`View product image ${index + 1}`} aria-current={selectedImage === image} key={image}><img src={image} alt="" /></button>)}</div><div className="cucumber-gallery-main"><img src={selectedImage} alt={`${product.name} product detail`} /></div></div>
@@ -54,6 +55,6 @@ export default function ProductDetailsPage({ product }: { product: CatalogProduc
     <section className="cucumber-section cucumber-ingredients"><div className="cucumber-section-intro"><p className="eyebrow red">INSIDE THE FORMULA</p><h2>Familiar actives.<br /><em>Clear purpose.</em></h2></div><div className="cucumber-ingredient-grid">{config.ingredients.map(([name, text]) => <article key={name}><span>ACTIVE</span><h3>{name}</h3><p>{text}</p></article>)}</div></section>
     <section className="cucumber-section cucumber-howto"><div><p className="eyebrow">HOW TO USE</p><h2>Your simple<br /><em>daily ritual.</em></h2></div><ol>{config.steps.map((step, index) => <li key={step}><b>0{index + 1}</b><span>{step}</span></li>)}</ol></section>
     <section className="cucumber-results"><div><p className="eyebrow red">VISIBLE RESULTS</p><h2>Care you can<br /><em>feel in your rhythm.</em></h2><p>{config.tip}</p><small>*Based on study conducted at our facility</small></div><img src={`/product-details/${product.slug}/7.png`} alt={`${product.name} product results`} /></section>
-    <section className="cucumber-bottom-cta"><p className="eyebrow">READY FOR A FRESH START?</p><h2>Simple care.<br /><em>Visible comfort.</em></h2><button className="primary" onClick={addProduct}>{added ? "In your bag ✓" : `Add ${product.name} · ₹${product.price}`}</button></section><PremiumFooter />
+    <section className="cucumber-bottom-cta"><p className="eyebrow">READY FOR A FRESH START?</p><h2>Simple care.<br /><em>Visible comfort.</em></h2><button className="primary" onClick={addProduct}>{added ? "In your bag ✓" : `Add ${product.name} · ₹${product.price}`}</button></section><RelatedProducts currentSlug={product.slug} /><PremiumFooter />
   </main>;
 }
