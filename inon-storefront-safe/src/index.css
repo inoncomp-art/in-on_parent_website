@@ -161,6 +161,74 @@ main{animation:pageReveal .65s ease both}.hero-copy>*{animation:pageReveal .8s e
 .mobile-auth{gap:14px;padding-top:8px}.mobile-auth a{font-size:13px;font-weight:800}.mobile-auth a:last-child{color:var(--red)}
 .profile-completion{background:#fff;border:1px solid var(--line);padding:22px;margin-bottom:24px}.profile-completion>div{display:flex;justify-content:space-between;font-size:11px;font-weight:800;letter-spacing:1px}.profile-completion i{display:block;height:8px;background:#f2e0dc;margin:14px 0;overflow:hidden}.profile-completion i u{display:block;height:100%;background:var(--red);transition:width .5s ease}.profile-completion p,.form-success{font-size:13px;color:#746a64}.profile-form{background:#fff;border:1px solid var(--line);padding:25px;margin-top:20px}.profile-form h3{font:28px Georgia,serif;margin-top:0}.profile-form .primary{margin-top:10px}.avatar-row{display:flex;align-items:center;gap:18px}.avatar-row>img,.avatar-row>span{width:72px;height:72px;border-radius:50%;object-fit:cover;background:#f6c8cf;color:var(--deep);display:grid;place-items:center;font:32px Georgia,serif}.avatar-row .field{flex:1}.account-addresses .account-detail-card{margin-bottom:12px}.address-actions{display:flex;justify-content:space-between;align-items:center;gap:15px}.address-actions p{font-size:13px;color:#746a64}.address-buttons{display:flex;gap:8px}.address-buttons button{border:1px solid var(--line);background:transparent;padding:9px 12px;font-size:11px;font-weight:800}.check{display:flex;gap:8px;align-items:center;font-size:12px;margin:14px 0}.account-content{font-size:15px}.account-content h2{font-size:clamp(34px,4vw,54px)}
 .about-hero{position:relative;min-height:560px;overflow:hidden;background:#f8ecb5}
+
+/* Keep the storefront account actions available on compact screens. The earlier
+   tablet rule hides these links to make room, but they are important navigation. */
+@media(max-width:1050px){
+  body{overflow-x:hidden}
+  header:not(.premium-header){
+    min-height:70px;
+    height:auto;
+    padding:10px 16px;
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:8px;
+  }
+  header:not(.premium-header) nav{display:none}
+  header:not(.premium-header) .header-actions{
+    display:flex;
+    align-items:center;
+    justify-self:end;
+    gap:5px;
+    min-width:0;
+  }
+  header:not(.premium-header) .account-links .login-link,
+  header:not(.premium-header) .account-links .signup-link,
+  header:not(.premium-header) .account-links .dashboard-link{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid #211;
+    border-radius:99px;
+    padding:9px 8px;
+    font-size:9px;
+    font-weight:800;
+    white-space:nowrap;
+  }
+  header:not(.premium-header) .account-links .dashboard-link{background:var(--red);border-color:var(--red);color:#fff}
+  header:not(.premium-header) .account-links .bag{font-size:10px;padding:9px 8px;white-space:nowrap}
+  header:not(.premium-header) .account-links .bag b{padding:3px 5px}
+}
+
+/* A slightly stronger editorial type scale keeps the homepage hierarchy readable
+   and consistent without changing the approved hero or product cards. */
+.homepage-proof span{font-size:12px;font-weight:900;letter-spacing:.25px}
+.homepage-proof small{font-size:10px;font-weight:500}
+.editorial-heading h2,.routine-visual h2,.campaign-copy h2,.formula-intro h2,.shelfie-editorial h2{font-weight:600}
+.editorial-heading>p:last-of-type,.routine-visual>p:not(.eyebrow),.shelfie-editorial>.editorial-heading>p:last-of-type{font-size:13px}
+.fruit-story-copy h3{font-size:22px;font-weight:600}
+.fruit-story-copy>b{font-size:10px;font-weight:600}
+.fruit-story-copy p{font-size:11px}
+.formula-card b{font-size:20px;font-weight:600}
+.formula-card strong{font-size:10px;font-weight:800}
+.formula-card p{font-size:10px}
+.shelfie-card p{font-size:14px;line-height:1.2}
+.shelfie-card small{font-size:9px}
+
+@media(max-width:480px){
+  header:not(.premium-header){display:flex;padding-inline:10px;justify-content:space-between;gap:6px}
+  header:not(.premium-header) .wordmark{width:76px;flex:0 0 76px;overflow:visible}
+  header:not(.premium-header) .wordmark img{width:70px!important;max-width:70px;transform:none}
+  header:not(.premium-header) .account-links{gap:3px;flex:1;min-width:0;justify-content:flex-end}
+  header:not(.premium-header) .account-links .bag{display:inline-flex!important;align-items:center;justify-content:center;flex:0 0 auto}
+  header:not(.premium-header) .account-links .login-link,
+  header:not(.premium-header) .account-links .signup-link,
+  header:not(.premium-header) .account-links .dashboard-link{padding:8px 6px;font-size:8px}
+  header:not(.premium-header) .account-links .bag{padding:8px 6px;font-size:9px}
+  .homepage-proof{padding-inline:16px}
+  .homepage-proof span{font-size:11px}
+  .homepage-proof small{font-size:9px}
+  .editorial-heading h2,.routine-visual h2,.formula-intro h2,.shelfie-editorial h2{letter-spacing:-2px}
+}
 .about-video{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:#f8ecb5}
 .about-video iframe{position:absolute;left:50%;top:50%;width:177.78vh;height:56.25vw;min-width:100%;min-height:100%;transform:translate(-50%,-50%);border:0}
 .about-hero-content{position:relative;z-index:1}
@@ -195,3 +263,19 @@ main{animation:pageReveal .65s ease both}.hero-copy>*{animation:pageReveal .8s e
 .supplied-ritual-cta{color:#9f1d2f;border-color:#9f1d2f}
 .supplied-hero{margin-top:-24px!important}
 @media(max-width:720px){.supplied-hero{margin-top:-16px!important;height:clamp(570px,78vh,700px)!important;min-height:570px!important;overflow:hidden}.supplied-hero-video{object-position:center top}.supplied-hero-copy{width:calc(100% - 28px);overflow:hidden}.supplied-hero-copy h1{font-size:clamp(30px,8.6vw,42px);letter-spacing:-1.5px;line-height:1.02;margin-bottom:16px;white-space:normal}.supplied-hero-copy>p{max-width:310px;margin-left:auto;margin-right:auto;font-size:12px;line-height:1.45}.supplied-hero-copy>p br{display:block}.supplied-hero-actions{bottom:24px;gap:14px}.supplied-shop-cta{padding:12px 14px;font-size:8px}.supplied-ritual-cta{font-size:10px}}
+
+@media(max-width:480px){
+  header:not(.premium-header){display:flex!important;padding:10px;justify-content:space-between;gap:6px;position:sticky}
+  header:not(.premium-header) .wordmark{width:76px;flex:0 0 76px}
+  header:not(.premium-header) .wordmark img{width:70px!important;max-width:70px;transform:none}
+  header:not(.premium-header) .account-links{display:flex!important;position:absolute;right:10px;top:20px;min-width:0;justify-content:flex-end;gap:3px}
+  header:not(.premium-header) .account-links .login-link,
+  header:not(.premium-header) .account-links .signup-link,
+  header:not(.premium-header) .account-links .dashboard-link,
+  header:not(.premium-header) .account-links .bag{display:inline-flex!important;align-items:center;justify-content:center;width:42px;height:30px;flex:0 0 42px;padding:0!important;font-size:0}
+  header:not(.premium-header) .account-links .login-link::after{content:'Log in';font-size:8px}
+  header:not(.premium-header) .account-links .signup-link::after{content:'Sign up';font-size:8px}
+  header:not(.premium-header) .account-links .dashboard-link::after{content:'Account';font-size:8px}
+  header:not(.premium-header) .account-links .bag::before{content:'Bag';font-size:9px}
+  header:not(.premium-header) .account-links .bag b{font-size:8px;margin-left:3px}
+}
