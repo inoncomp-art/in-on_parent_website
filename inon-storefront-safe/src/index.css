@@ -135,3 +135,5 @@ main{animation:pageReveal .65s ease both}.hero-copy>*{animation:pageReveal .8s e
 @media(max-width:720px){.shop-carousel{aspect-ratio:1.88/1;min-height:0!important}.shop-hero-slide{object-fit:contain}}
 .supplied-hero-copy{top:14%!important}
 @media(max-width:720px){.supplied-hero-copy{top:11%!important}}
+.supplied-hero,.shop-carousel{position:relative;z-index:1;margin-top:-10px}
+@media(max-width:720px){.supplied-hero,.shop-carousel{margin-top:-6px}}
