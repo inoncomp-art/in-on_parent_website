@@ -138,15 +138,10 @@ export default function Home() {
         <div className="supplied-hero-copy">
           <h1>Skin that feels<br /><em>good,</em> in &amp; out.</h1>
           <p>Joyful, effective skincare made with<br />familiar fruits and proven actives,<br />designed for <strong>real Indian skin.</strong></p>
-          <div className="supplied-hero-actions">
-            <a className="supplied-shop-cta" href="#shop">SHOP THE COLLECTION <span aria-hidden="true">→</span></a>
-            <a className="supplied-ritual-cta" href="#ritual">Find your ritual <span aria-hidden="true">→</span></a>
-          </div>
-          <div className="supplied-proof">
-            <span><b>☆</b><strong>4.8/5</strong><small>Customer love</small></span>
-            <span><b>♧</b><strong>{catalog.length || 5}</strong><small>Focused formulas</small></span>
-            <span><b>♧</b><strong>100%</strong><small>Joyful care</small></span>
-          </div>
+        </div>
+        <div className="supplied-hero-actions">
+          <a className="supplied-shop-cta" href="#shop">SHOP THE COLLECTION <span aria-hidden="true">→</span></a>
+          <a className="supplied-ritual-cta" href="#ritual">Find your ritual <span aria-hidden="true">→</span></a>
         </div>
       </section>
 
