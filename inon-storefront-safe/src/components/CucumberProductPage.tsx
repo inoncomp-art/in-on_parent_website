@@ -26,23 +26,40 @@ const ingredients = [
 
 export default function CucumberProductPage({ product }: { product: CatalogProduct }) {
   const [added, setAdded] = useState(false);
+  const galleryImages = [
+    "/cucumber-facewash.png",
+    "/product-details/cucumber-face-wash/2.png",
+    "/product-details/cucumber-face-wash/3.png",
+    "/product-details/cucumber-face-wash/4.png",
+    "/product-details/cucumber-face-wash/5.png",
+    "/product-details/cucumber-face-wash/6.png",
+  ];
+  const [selectedImage, setSelectedImage] = useState(galleryImages[0]);
   const addProduct = () => { addToBag(product.slug); setAdded(true); };
 
   return (
     <main className="cucumber-page">
       <PremiumHeader />
-      <section className="cucumber-hero">
-        <img className="cucumber-hero-background" src="/cucumber-facewash.png" alt="Cucumber face wash ritual" />
-        <div className="cucumber-hero-content">
-          <p className="eyebrow">IN&ON / DAILY CLEANSE</p>
-          <h1>Cucumber<br /><em>Face Wash</em></h1>
-          <p className="cucumber-hero-kicker">With Vitamin C &amp; Niacinamide</p>
-          <p className="cucumber-hero-claim">Refreshed &amp; Glowing Skin</p>
-          <p className="cucumber-hero-description">Reveal Brighter, Healthier<br />Looking Skin</p>
-          <div className="cucumber-purchase">
-            <div><b>₹{product.price}</b><del>₹{product.mrp}</del><small>Inclusive of taxes</small></div>
-            <button className="primary" onClick={addProduct}>{added ? "Added ✓" : "Add to bag"}</button>
+      <section className="cucumber-product-top">
+        <div className="cucumber-gallery">
+          <div className="cucumber-gallery-thumbs" aria-label="Cucumber Face Wash product images">
+            {galleryImages.map((image, index) => <button className={selectedImage === image ? "active" : ""} onClick={() => setSelectedImage(image)} aria-label={`View product image ${index + 1}`} aria-current={selectedImage === image} key={image}><img src={image} alt="" /></button>)}
           </div>
+          <div className="cucumber-gallery-main"><img src={selectedImage} alt="Cucumber Face Wash product detail" /></div>
+        </div>
+        <div className="cucumber-product-details">
+          <div className="cucumber-badges"><b>BESTSELLER</b><span>FRUIT-POWERED CARE</span></div>
+          <h1>Cucumber Face Wash</h1>
+          <p className="cucumber-product-subtitle">With Vitamin C &amp; Niacinamide</p>
+          <p className="cucumber-suitable">Suitable for: <strong>All Skin Types</strong></p>
+          <div className="cucumber-rating"><span>★★★★★</span> Loved by everyday skin rituals</div>
+          <div className="cucumber-size-row"><span className="selected">100 ml <small>Best value</small></span></div>
+          <div className="cucumber-price"><b>₹{product.price}</b><del>₹{product.mrp}</del><span>Save ₹{product.mrp - product.price}</span></div>
+          <p className="cucumber-tax">MRP incl. of all taxes</p>
+          <div className="cucumber-detail-card"><strong>Helps</strong><div><span>✦ Fresh cleanse</span><span>✦ Excess oil care</span><span>✦ Refreshed glow</span><span>✦ Comfortable hydration</span></div><strong>Targets</strong><div className="targets"><span>Oiliness</span><span>Dullness</span><span>Daily grime</span></div></div>
+          <div className="cucumber-delivery"><b>Check for delivery</b><div><input placeholder="Enter your pincode" /><button>Check</button></div></div>
+          <div className="cucumber-offer"><b>Available offer</b><strong>Flat 15% OFF</strong><small>On your first ritual · Use code: GLOW15</small></div>
+          <button className="cucumber-add primary" onClick={addProduct}>{added ? "ADDED TO BAG ✓" : "ADD TO BAG"}</button>
         </div>
       </section>
 
