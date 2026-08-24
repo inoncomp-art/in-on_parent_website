@@ -27,7 +27,6 @@ const ingredients = [
 export default function CucumberProductPage({ product }: { product: CatalogProduct }) {
   const [added, setAdded] = useState(false);
   const galleryImages = [
-    "/cucumber-facewash.png",
     "/product-details/cucumber-face-wash/2.png",
     "/product-details/cucumber-face-wash/3.png",
     "/product-details/cucumber-face-wash/4.png",
