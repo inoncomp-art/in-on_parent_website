@@ -204,6 +204,10 @@ def seed_database(store: SupabaseStore) -> None:
             },
         )
 
+    # Keep the advertised first-ritual offer available after every deployment.
+    if not store.select("discounts", filters=[("code", "eq.GLOW15")], limit=1):
+        store.insert("discounts", {"code": "GLOW15", "kind": "percentage", "amount": 15, "minimum_order": 0, "active": True})
+
     if store.select("orders", limit=1):
         return
 

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { loadCatalog, type CatalogProduct } from "./catalog";
-import { createOrder, hasStoredSession, loadCustomerOrder, recordAnalyticsEvent, type ApiOrder } from "./lib/api";
+import { createOrder, hasStoredSession, loadCustomerOrder, recordAnalyticsEvent, validateCoupon, type ApiOrder, type CouponValidation } from "./lib/api";
 import { addToBag, readBag, removeBagItemAt } from "./lib/shopState";
 import HomepageEditorial, { HomepageCommunity } from "./components/HomepageEditorial";
 
@@ -17,6 +17,10 @@ export default function Home() {
   const [checkout, setCheckout] = useState({ name: "", phone: "", address: "", postalCode: "", city: "" });
   const [checkoutError, setCheckoutError] = useState("");
   const [checkoutBusy, setCheckoutBusy] = useState(false);
+  const [couponCode, setCouponCode] = useState("");
+  const [coupon, setCoupon] = useState<CouponValidation | null>(null);
+  const [couponMessage, setCouponMessage] = useState("");
+  const [couponBusy, setCouponBusy] = useState(false);
   const [trackNumber, setTrackNumber] = useState("");
   const [trackedOrder, setTrackedOrder] = useState<ApiOrder | null>(null);
   const [trackError, setTrackError] = useState("");
@@ -49,6 +53,29 @@ export default function Home() {
     .filter(Boolean) as CatalogProduct[];
 
   const subtotal = cartProducts.reduce((sum, product) => sum + product.price, 0);
+  const couponDiscount = coupon ? Math.min(coupon.discount, subtotal) : 0;
+  const total = Math.max(0, subtotal - couponDiscount);
+
+  async function applyCoupon() {
+    const code = couponCode.trim().toUpperCase();
+    setCouponMessage("");
+    if (!code) {
+      setCouponMessage("Enter a coupon code first.");
+      return;
+    }
+    setCouponBusy(true);
+    try {
+      const result = await validateCoupon(code, subtotal);
+      setCoupon(result);
+      setCouponCode(result.code);
+      setCouponMessage(`Coupon applied. You save ₹${result.discount}.`);
+    } catch (error) {
+      setCoupon(null);
+      setCouponMessage(error instanceof Error ? error.message : "Unable to apply coupon");
+    } finally {
+      setCouponBusy(false);
+    }
+  }
 
   function add(product: CatalogProduct) {
     addToBag(product.slug);
@@ -433,12 +460,14 @@ export default function Home() {
                       ))}
                     </div>
                     <div className="coupon">
-                      <input placeholder="Coupon code" />
-                      <button>Apply</button>
+                      <input value={couponCode} onChange={(event) => setCouponCode(event.target.value.toUpperCase())} placeholder="Coupon code" aria-label="Coupon code" />
+                      <button type="button" onClick={applyCoupon} disabled={couponBusy}>{couponBusy ? "..." : "Apply"}</button>
                     </div>
+                    {couponMessage ? <p className={coupon ? "coupon-success" : "coupon-error"}>{couponMessage}</p> : null}
+                    {coupon ? <div className="total"><span>Discount ({coupon.code})</span><b>-₹{couponDiscount}</b></div> : null}
                     <div className="total">
-                      <span>Subtotal</span>
-                      <b>₹{subtotal}</b>
+                      <span>{coupon ? "Total" : "Subtotal"}</span>
+                      <b>₹{total}</b>
                     </div>
                     <p className="delivery">{subtotal >= 599 ? "✓ You qualify for free shipping" : `Add ₹${599 - subtotal} more for complimentary shipping`}</p>
                     <button className="primary full" onClick={() => setPanel("checkout")}>

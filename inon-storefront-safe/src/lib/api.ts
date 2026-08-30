@@ -171,6 +171,11 @@ export async function recordAnalyticsEvent(event_name: string, path = window.loc
   await postJSON("/api/analytics/events", { event_name, path, metadata });
 }
 
+export type CouponValidation = { code: string; discount: number; kind: "percentage" | "fixed"; amount: number };
+export async function validateCoupon(code: string, subtotal: number): Promise<CouponValidation> {
+  return postJSON("/api/discounts/validate", { code, subtotal });
+}
+
 export type ApiUser = {
   id: number;
   email: string;
