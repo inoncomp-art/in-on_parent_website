@@ -33,7 +33,7 @@ jobs:
         shell: bash
         run: |
           if [ -d tests ]; then
-            pytest -q
+            PYTHONPATH=. pytest -q
           else
             echo 'No backend tests directory found; compile check completed.'
           fi
