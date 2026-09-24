@@ -1,0 +1,50 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  trigger-providers:
+    name: Trigger Render and Cloudflare deployments
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render backend deploy
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        shell: bash
+        run: |
+          if [ -n "$RENDER_DEPLOY_HOOK" ]; then
+            curl --fail --silent --show-error --request POST "$RENDER_DEPLOY_HOOK"
+            echo 'Render deploy triggered.'
+          else
+            echo 'RENDER_DEPLOY_HOOK is not configured; skipping Render deploy.'
+          fi
+
+      - name: Trigger Cloudflare storefront deploy
+        env:
+          CLOUDFLARE_STOREFRONT_DEPLOY_HOOK: ${{ secrets.CLOUDFLARE_STOREFRONT_DEPLOY_HOOK }}
+        shell: bash
+        run: |
+          if [ -n "$CLOUDFLARE_STOREFRONT_DEPLOY_HOOK" ]; then
+            curl --fail --silent --show-error --request POST "$CLOUDFLARE_STOREFRONT_DEPLOY_HOOK"
+            echo 'Cloudflare storefront deploy triggered.'
+          else
+            echo 'CLOUDFLARE_STOREFRONT_DEPLOY_HOOK is not configured; skipping storefront deploy.'
+          fi
+
+      - name: Trigger Cloudflare admin deploy
+        env:
+          CLOUDFLARE_ADMIN_DEPLOY_HOOK: ${{ secrets.CLOUDFLARE_ADMIN_DEPLOY_HOOK }}
+        shell: bash
+        run: |
+          if [ -n "$CLOUDFLARE_ADMIN_DEPLOY_HOOK" ]; then
+            curl --fail --silent --show-error --request POST "$CLOUDFLARE_ADMIN_DEPLOY_HOOK"
+            echo 'Cloudflare admin deploy triggered.'
+          else
+            echo 'CLOUDFLARE_ADMIN_DEPLOY_HOOK is not configured; skipping admin deploy.'
+          fi
