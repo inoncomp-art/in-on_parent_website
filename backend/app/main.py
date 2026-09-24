@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Query, Response, status
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.schemas import (
@@ -37,6 +37,7 @@ from app.schemas import (
 from app.seed import PRODUCT_SEED, make_password, seed_database, verify_password
 from app.settings import settings
 from app.supabase_store import SupabaseStore
+from app.security import InMemoryRateLimiter
 
 
 def _require_supabase() -> SupabaseStore:
@@ -50,6 +51,7 @@ def _require_supabase() -> SupabaseStore:
 
 
 store = _require_supabase()
+rate_limiter = InMemoryRateLimiter()
 
 
 app = FastAPI(title=settings.app_name)
@@ -83,8 +85,38 @@ def _read_order(order: dict[str, Any]) -> dict[str, Any]:
         "total": row["total"],
         "item_count": row["item_count"],
         "shipping_eta": row["shipping_eta"],
+        "subtotal": row.get("subtotal", row["total"]),
+        "shipping_fee": row.get("shipping_fee", 0),
+        "discount": row.get("discount", 0),
+        "coupon_code": row.get("coupon_code"),
+        "shipping_phone": row.get("shipping_phone"),
+        "shipping_address": row.get("shipping_address"),
+        "shipping_city": row.get("shipping_city"),
+        "shipping_state": row.get("shipping_state"),
+        "shipping_postal_code": row.get("shipping_postal_code"),
+        "shipping_country": row.get("shipping_country"),
         "items": [OrderItemRead.model_validate(item) for item in items],
     }
+
+
+def _client_key(request: Request, scope: str) -> str:
+    host = request.client.host if request.client else "unknown"
+    return f"{scope}:{host}"
+
+
+def _enforce_rate_limit(request: Request, scope: str, limit: int, window_seconds: int = 60) -> None:
+    if not rate_limiter.check(_client_key(request, scope), limit, window_seconds):
+        raise HTTPException(status_code=429, detail="Too many requests. Please try again shortly.")
+
+
+def _audit_admin(profile: dict[str, Any], action: str, resource_type: str, resource_id: str | None = None, metadata: dict[str, Any] | None = None) -> None:
+    store.insert("admin_audit_log", {
+        "admin_user_id": profile["id"],
+        "action": action,
+        "resource_type": resource_type,
+        "resource_id": resource_id,
+        "metadata": metadata or {},
+    })
 
 
 def _bearer_token(authorization: str | None) -> str:
@@ -117,7 +149,10 @@ def _require_admin(profile: dict[str, Any]) -> None:
 
 @app.on_event("startup")
 def startup() -> None:
-    seed_database(store)
+    # Production data provisioning is a separate, reviewed operation. Startup
+    # must not mutate users, catalog, coupons, or orders.
+    if settings.seed_on_startup:
+        seed_database(store)
 
 
 @app.get("/health")
@@ -131,7 +166,8 @@ def site_stats() -> SiteStats:
 
 
 @app.post("/api/auth/login", response_model=AuthSession)
-def login(payload: LoginRequest) -> AuthSession:
+def login(payload: LoginRequest, request: Request) -> AuthSession:
+    _enforce_rate_limit(request, "login", 10)
     auth = store.auth_password_login(payload.email, payload.password)
     token = auth.get("access_token")
     if not token:
@@ -147,7 +183,8 @@ def login(payload: LoginRequest) -> AuthSession:
 
 
 @app.post("/api/auth/signup", response_model=AuthSession)
-def signup(payload: SignupRequest) -> AuthSession:
+def signup(payload: SignupRequest, request: Request) -> AuthSession:
+    _enforce_rate_limit(request, "signup", 5, 300)
     existing = store.select("users", filters=[("email", f"eq.{payload.email}")], limit=1)
     if existing:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already exists")
@@ -316,7 +353,8 @@ def record_analytics_event(payload: dict[str, Any], authorization: str | None = 
 
 
 @app.post("/api/discounts/validate")
-def validate_coupon(payload: CouponValidate) -> dict[str, Any]:
+def validate_coupon(payload: CouponValidate, request: Request) -> dict[str, Any]:
+    _enforce_rate_limit(request, "coupon", 30)
     rows = store.select("discounts", filters=[("code", f"eq.{payload.code.upper()}"), ("active", "eq.true")], limit=1)
     if not rows:
         raise HTTPException(status_code=404, detail="Coupon is not active")
@@ -394,6 +432,7 @@ def update_admin_customer(customer_id: int, payload: CustomerUpdate, authorizati
     updated = store.update("users", filters=[("id", f"eq.{customer_id}")], payload=data)
     if not updated:
         raise HTTPException(status_code=404, detail="Customer not found")
+    _audit_admin(profile, "customer.update", "customer", str(customer_id), payload.model_dump(exclude_none=True))
     return _as_user(updated[0])
 
 
@@ -408,6 +447,7 @@ def delete_admin_customer(customer_id: int, authorization: str | None = Header(d
     if auth_user and auth_user.get("id"):
         store.auth_admin_delete_user(str(auth_user["id"]))
     store.delete("users", filters=[("id", f"eq.{customer_id}")])
+    _audit_admin(profile, "customer.delete", "customer", str(customer_id))
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -421,6 +461,7 @@ def admin_discounts(authorization: str | None = Header(default=None)) -> list[Di
 def create_admin_discount(payload: DiscountWrite, authorization: str | None = Header(default=None)) -> DiscountRead:
     profile = _profile_for_token(_bearer_token(authorization)); _require_admin(profile)
     created = store.insert("discounts", payload.model_dump(mode="json"))
+    _audit_admin(profile, "discount.create", "discount", str(created[0]["id"]))
     return DiscountRead.model_validate(created[0])
 
 
@@ -429,6 +470,7 @@ def update_admin_discount(discount_id: int, payload: DiscountWrite, authorizatio
     profile = _profile_for_token(_bearer_token(authorization)); _require_admin(profile)
     updated = store.update("discounts", filters=[("id", f"eq.{discount_id}")], payload=payload.model_dump(mode="json"))
     if not updated: raise HTTPException(status_code=404, detail="Discount not found")
+    _audit_admin(profile, "discount.update", "discount", str(discount_id))
     return DiscountRead.model_validate(updated[0])
 
 
@@ -436,6 +478,7 @@ def update_admin_discount(discount_id: int, payload: DiscountWrite, authorizatio
 def delete_admin_discount(discount_id: int, authorization: str | None = Header(default=None)) -> Response:
     profile = _profile_for_token(_bearer_token(authorization)); _require_admin(profile)
     store.delete("discounts", filters=[("id", f"eq.{discount_id}")])
+    _audit_admin(profile, "discount.delete", "discount", str(discount_id))
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -449,6 +492,7 @@ def admin_content(authorization: str | None = Header(default=None)) -> list[CmsR
 def create_admin_content(payload: CmsWrite, authorization: str | None = Header(default=None)) -> CmsRead:
     profile = _profile_for_token(_bearer_token(authorization)); _require_admin(profile)
     created = store.insert("cms_content", payload.model_dump(mode="json"))
+    _audit_admin(profile, "content.create", "cms_content", str(created[0]["id"]))
     return CmsRead.model_validate(created[0])
 
 
@@ -457,6 +501,7 @@ def update_admin_content(content_id: int, payload: CmsWrite, authorization: str 
     profile = _profile_for_token(_bearer_token(authorization)); _require_admin(profile)
     updated = store.update("cms_content", filters=[("id", f"eq.{content_id}")], payload={**payload.model_dump(mode="json"), "updated_at": datetime.utcnow().isoformat()})
     if not updated: raise HTTPException(status_code=404, detail="Content not found")
+    _audit_admin(profile, "content.update", "cms_content", str(content_id))
     return CmsRead.model_validate(updated[0])
 
 
@@ -494,6 +539,7 @@ def create_admin_product(
     if store.select("products", filters=[("slug", f"eq.{payload.slug}")], limit=1):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Product slug already exists")
     created = store.insert("products", payload.model_dump())
+    _audit_admin(profile, "product.create", "product", payload.slug)
     return _as_product(created[0])
 
 
@@ -516,6 +562,7 @@ def update_admin_product(
     updated = store.update("products", filters=[("slug", f"eq.{slug}")], payload=data)
     if not updated:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+    _audit_admin(profile, "product.update", "product", slug, data)
     return _as_product(updated[0])
 
 
@@ -526,6 +573,7 @@ def delete_admin_product(slug: str, authorization: str | None = Header(default=N
     deleted = store.delete("products", filters=[("slug", f"eq.{slug}")])
     if not deleted:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+    _audit_admin(profile, "product.delete", "product", slug)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -543,17 +591,21 @@ def update_admin_order_status(
     order = store.select("orders", filters=[("number", f"eq.{number}")], select="*,order_items(*)", limit=1)
     if not order:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
+    _audit_admin(profile, "order.status_update", "order", number, {"status": payload.status})
     return _read_order(order[0])
 
 
 @app.post("/api/orders", response_model=OrderRead, status_code=status.HTTP_201_CREATED)
-def create_order(payload: CheckoutRequest, authorization: str | None = Header(default=None)) -> OrderRead:
+def create_order(payload: CheckoutRequest, request: Request, authorization: str | None = Header(default=None)) -> OrderRead:
+    _enforce_rate_limit(request, "checkout", 12)
     token = _bearer_token(authorization)
     _profile_for_token(token)
     try:
         result = store.rpc("checkout_order", {
             "p_items": [item.model_dump() for item in payload.items],
             "p_shipping": payload.shipping.model_dump(),
+            "p_coupon_code": payload.coupon_code,
+            "p_idempotency_key": payload.idempotency_key,
         }, bearer=token)
     except RuntimeError as exc:
         message = str(exc)
@@ -564,8 +616,6 @@ def create_order(payload: CheckoutRequest, authorization: str | None = Header(de
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Unable to place order") from exc
     if not result:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Unable to place order")
-    # COD orders are confirmed for fulfilment, not marked as paid upfront.
-    store.update("orders", filters=[("number", f"eq.{result[0]['order_number']}")], payload={"status": "Confirmed"})
     stored = store.select("orders", filters=[("number", f"eq.{result[0]['order_number']}")], select="*,order_items(*)", limit=1)
     if not stored:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Order confirmation unavailable")

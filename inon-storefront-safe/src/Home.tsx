@@ -14,13 +14,14 @@ export default function Home() {
   const [panel, setPanel] = useState<"cart" | "track" | "checkout" | null>(null);
   const [query, setQuery] = useState("");
   const [toast, setToast] = useState("");
-  const [checkout, setCheckout] = useState({ name: "", phone: "", address: "", postalCode: "", city: "" });
+  const [checkout, setCheckout] = useState({ name: "", phone: "", address: "", postalCode: "", city: "", state: "", country: "India" });
   const [checkoutError, setCheckoutError] = useState("");
   const [checkoutBusy, setCheckoutBusy] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [coupon, setCoupon] = useState<CouponValidation | null>(null);
   const [couponMessage, setCouponMessage] = useState("");
   const [couponBusy, setCouponBusy] = useState(false);
+  const [idempotencyKey, setIdempotencyKey] = useState("");
   const [trackNumber, setTrackNumber] = useState("");
   const [trackedOrder, setTrackedOrder] = useState<ApiOrder | null>(null);
   const [trackError, setTrackError] = useState("");
@@ -98,11 +99,18 @@ export default function Home() {
     }
     setCheckoutBusy(true);
     try {
+      const key = idempotencyKey || (crypto.randomUUID ? crypto.randomUUID() : `inon-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+      setIdempotencyKey(key);
       const order = await createOrder({
         items: cartProducts.map((product) => ({ product_slug: product.slug, quantity: 1 })),
-        shipping: { first_name: firstName, last_name: lastName, phone: checkout.phone, address: checkout.address, city: checkout.city, postal_code: checkout.postalCode },
+        shipping: { first_name: firstName, last_name: lastName, phone: checkout.phone, address: checkout.address, city: checkout.city, state: checkout.state || undefined, postal_code: checkout.postalCode, country: checkout.country },
+        coupon_code: coupon?.code ?? null,
+        idempotency_key: key,
       });
       setCart([]);
+      setCoupon(null);
+      setCouponCode("");
+      setIdempotencyKey("");
       setPanel(null);
       setToast(`${order.number} confirmed. Your ritual is on its way.`);
       window.setTimeout(() => setToast(""), 3500);
@@ -528,11 +536,19 @@ export default function Home() {
                   Phone number
                   <input value={checkout.phone} onChange={(event) => setCheckout({ ...checkout, phone: event.target.value })} placeholder="10-digit mobile number" />
                 </label>
-                <label className="field">
-                  Delivery address
+                  <label className="field">
+                    Delivery address
                   <textarea value={checkout.address} onChange={(event) => setCheckout({ ...checkout, address: event.target.value })} placeholder="House, street, locality"></textarea>
                 </label>
                 <div className="two">
+                    <label className="field">
+                      State
+                      <input value={checkout.state} onChange={(event) => setCheckout({ ...checkout, state: event.target.value })} placeholder="Delhi" />
+                    </label>
+                    <label className="field">
+                      Country
+                      <input value={checkout.country} onChange={(event) => setCheckout({ ...checkout, country: event.target.value })} placeholder="India" />
+                    </label>
                   <label className="field">
                     Pincode
                     <input value={checkout.postalCode} onChange={(event) => setCheckout({ ...checkout, postalCode: event.target.value })} placeholder="110001" />
@@ -544,7 +560,7 @@ export default function Home() {
                 </div>
                 <div className="total">
                   <span>Payable total</span>
-                  <b>₹{subtotal || 0}</b>
+                  <b>₹{total || 0}</b>
                 </div>
                 {checkoutError ? <p className="form-error">{checkoutError}</p> : null}
                 <button className="primary full" onClick={placeOrder} disabled={checkoutBusy}>{checkoutBusy ? "Confirming order..." : "Confirm order →"}</button>

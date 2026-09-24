@@ -480,6 +480,7 @@ export default function Admin() {
                   <th>ORDER</th>
                   <th>CUSTOMER</th>
                   <th>STATUS</th>
+                  <th>SHIP TO</th>
                   <th>ETA</th>
                   <th>TOTAL</th>
                   <th></th>
@@ -497,10 +498,13 @@ export default function Admin() {
                           setOrderStatusDrafts((drafts) => ({ ...drafts, [order.number]: event.target.value }))
                         }
                       >
-                        {["Confirmed", "Packed", "Shipped", "Delivered", "Cancelled"].map((status) => (
+                        {["Pending", "Confirmed", "Paid", "Packed", "Shipped", "Delivered", "Cancelled"].map((status) => (
                           <option key={status}>{status}</option>
                         ))}
                       </select>
+                    </td>
+                    <td title={[order.shipping_address, order.shipping_city, order.shipping_state, order.shipping_postal_code, order.shipping_country].filter(Boolean).join(", ")}>
+                      <small>{order.shipping_address || "Legacy order: address unavailable"}</small>
                     </td>
                     <td>{order.shipping_eta}</td>
                     <td>{formatCurrency(order.total)}</td>

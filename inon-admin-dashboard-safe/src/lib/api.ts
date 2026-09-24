@@ -113,6 +113,16 @@ export type AdminOrder = {
   total: number;
   item_count: number;
   shipping_eta: string;
+  subtotal: number;
+  shipping_fee: number;
+  discount: number;
+  coupon_code?: string | null;
+  shipping_phone?: string | null;
+  shipping_address?: string | null;
+  shipping_city?: string | null;
+  shipping_state?: string | null;
+  shipping_postal_code?: string | null;
+  shipping_country?: string | null;
   items: Array<{
     product_slug: string;
     product_name: string;

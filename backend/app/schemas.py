@@ -54,7 +54,7 @@ class ProductUpdate(BaseModel):
 
 
 class OrderStatusUpdate(BaseModel):
-    status: str = Field(pattern=r"^(Paid|Packed|Shipped|Delivered|Cancelled)$")
+    status: str = Field(pattern=r"^(Pending|Confirmed|Paid|Packed|Shipped|Delivered|Cancelled)$")
 
 
 class CheckoutItem(BaseModel):
@@ -68,13 +68,17 @@ class ShippingAddress(BaseModel):
     phone: str = Field(min_length=7, max_length=30)
     address: str = Field(min_length=5, max_length=240)
     city: str = Field(min_length=2, max_length=80)
+    state: str | None = Field(default=None, max_length=80)
     postal_code: str = Field(min_length=3, max_length=12)
+    country: str = Field(default="India", min_length=2, max_length=80)
 
 
 class CheckoutRequest(BaseModel):
     items: list[CheckoutItem] = Field(min_length=1, max_length=30)
     shipping: ShippingAddress
     payment_method: str = Field(default="cod", pattern=r"^cod$")
+    coupon_code: str | None = Field(default=None, max_length=40, pattern=r"^[A-Za-z0-9_-]+$")
+    idempotency_key: str = Field(min_length=16, max_length=100, pattern=r"^[A-Za-z0-9._:-]+$")
 
 
 class ProductRead(ProductBase):
@@ -207,6 +211,16 @@ class OrderRead(BaseModel):
     total: float
     item_count: int
     shipping_eta: str
+    subtotal: float = 0
+    shipping_fee: float = 0
+    discount: float = 0
+    coupon_code: str | None = None
+    shipping_phone: str | None = None
+    shipping_address: str | None = None
+    shipping_city: str | None = None
+    shipping_state: str | None = None
+    shipping_postal_code: str | None = None
+    shipping_country: str | None = None
     items: list[OrderItemRead] = Field(default_factory=list)
 
     model_config = ConfigDict(from_attributes=True)

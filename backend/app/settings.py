@@ -34,6 +34,7 @@ class Settings:
     seed_admin_password: str = os.getenv("SEED_ADMIN_PASSWORD", "inon-demo")
     seed_customer_email: str = os.getenv("SEED_CUSTOMER_EMAIL", "ananya@inon.local")
     seed_customer_password: str = os.getenv("SEED_CUSTOMER_PASSWORD", "inon-demo")
+    seed_on_startup: bool = os.getenv("SEED_ON_STARTUP", "false").lower() == "true"
 
     @property
     def cors_origin_list(self) -> list[str]:
@@ -41,6 +42,9 @@ class Settings:
         production_origins = [
             "https://inon-storefront.pages.dev",
             "https://inon-admin.pages.dev",
+            "https://inoncare.com",
+            "https://www.inoncare.com",
+            "https://admin.inoncare.com",
         ]
         return list(dict.fromkeys(configured + production_origins))
 
