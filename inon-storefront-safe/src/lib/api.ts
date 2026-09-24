@@ -145,6 +145,16 @@ export type ApiOrder = {
   total: number;
   item_count: number;
   shipping_eta: string;
+  subtotal: number;
+  shipping_fee: number;
+  discount: number;
+  coupon_code?: string | null;
+  shipping_phone?: string | null;
+  shipping_address?: string | null;
+  shipping_city?: string | null;
+  shipping_state?: string | null;
+  shipping_postal_code?: string | null;
+  shipping_country?: string | null;
   items: ApiOrderItem[];
 };
 
@@ -156,9 +166,13 @@ export async function createOrder(payload: {
     phone: string;
     address: string;
     city: string;
+    state?: string;
     postal_code: string;
+    country?: string;
   };
   payment_method?: "cod";
+  coupon_code?: string | null;
+  idempotency_key: string;
 }): Promise<ApiOrder> {
   return postJSON("/api/orders", payload);
 }
