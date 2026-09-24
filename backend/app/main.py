@@ -43,6 +43,11 @@ from app.security import InMemoryRateLimiter
 def _require_supabase() -> SupabaseStore:
     if not settings.supabase_url or not settings.supabase_service_role_key:
         raise RuntimeError("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required")
+    if settings.environment.lower() == "production":
+        if "*" in settings.cors_origin_list:
+            raise RuntimeError("Wildcard CORS is not allowed in production")
+        if settings.seed_on_startup:
+            raise RuntimeError("SEED_ON_STARTUP must remain false in production")
     return SupabaseStore(
         settings.supabase_url,
         settings.supabase_service_role_key,
